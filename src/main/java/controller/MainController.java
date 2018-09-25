@@ -80,23 +80,20 @@ public class MainController implements Initializable{
         BufferedReader readPayments = reader(paymentsFile);
         BufferedReader readDebts = reader(debtorsFile);
 
-        BufferedWriter result = null;
-        try {
-            result = new BufferedWriter(
-                    new OutputStreamWriter(
-                            new FileOutputStream("/results.txt"), "Cp1251"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+
+
 
         try {
+            BufferedWriter result = new BufferedWriter(
+                            new OutputStreamWriter(
+                                    new FileOutputStream("c:/results.txt"), "Cp1251"));
         while ((payment = readPayments.readLine()) != null) {
             list = new ArrayList<>();
             payment = payment.toLowerCase();
+            System.out.println(payment);
             while ((debtor = readDebts.readLine()) != null) {
                 debtor = debtor.toLowerCase();
+                System.out.println(debtor);
                 paymentsShort = payment.split(";")[1];
                 debtorShort = debtor.split(";")[1];
                 if (debtorShort.contains(paymentsShort)) list.add(debtor);
