@@ -52,6 +52,20 @@ public class MainController implements Initializable{
         txtPathDebtors.setText(paymentsFile.getPath());
     }
 
+    private BufferedReader reader(File file){
+        try {
+            return new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(file), "Cp1251"));
+        } catch (UnsupportedEncodingException e1) {
+            e1.printStackTrace();
+            return null;
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+            return null;
+        }
+    }
+
     private void search() {
         String payment;
         String debtor;
@@ -59,30 +73,12 @@ public class MainController implements Initializable{
         String debtorShort;
         List<String> list;
 
-        BufferedReader readPayments = null;
-        try {
-            readPayments = new BufferedReader(
-                    new InputStreamReader(
-                            new FileInputStream(paymentsFile), "Cp1251"));
-        } catch (UnsupportedEncodingException e) {
-            txtError.setText("Payment list is not chosen");
-            return;
-        } catch (FileNotFoundException e) {
+        if(paymentsFile==null||debtorsFile==null){
             txtError.setText("Payment list is not chosen");
             return;
         }
-
-        BufferedReader readDebts = null;
-        try {
-            readDebts = new BufferedReader(
-                    new InputStreamReader(
-                            new FileInputStream(debtorsFile), "Cp1251"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            txtError.setText("Debtors list is not chosen");
-            return;
-        }
+        BufferedReader readPayments = reader(paymentsFile);
+        BufferedReader readDebts = reader(debtorsFile);
 
         BufferedWriter result = null;
         try {
@@ -95,9 +91,7 @@ public class MainController implements Initializable{
             e.printStackTrace();
         }
 
-try {
-
-
+        try {
         while ((payment = readPayments.readLine()) != null) {
             list = new ArrayList<>();
             payment = payment.toLowerCase();
