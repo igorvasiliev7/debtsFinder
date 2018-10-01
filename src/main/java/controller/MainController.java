@@ -35,8 +35,7 @@ public class MainController implements Initializable {
     private File paymentsFile;
 
     public void initialize(URL location, ResourceBundle resources) {
-        Search search = new Search(txtError, txtResults, debtorsFile, paymentsFile);
-        btnSearch.setOnAction(e -> new Thread(search).start());
+        btnSearch.setOnAction(e -> new Thread(new Search(txtError, txtResults, debtorsFile, paymentsFile)).start());
         btnPathDebtors.setOnAction(event -> chooseDebtors());
         btnPathPayment.setOnAction(event -> choosePayments());
     }

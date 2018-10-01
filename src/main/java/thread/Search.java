@@ -41,12 +41,20 @@ public class Search implements Runnable {
 
         BufferedReader readDebts;
         BufferedReader readPayments = reader(paymentsFile);
+        if (readPayments == null) {
+            System.out.println("Bed payments file, choose again");
+            return;
+        }
 
         try {
-            BufferedWriter result = writer("d://result.txt");
+            BufferedWriter result = writer();
 
             while ((payment = readPayments.readLine()) != null) {
                 readDebts = reader(debtorsFile);
+                if (readDebts == null) {
+                    System.out.println("Bed debtors file, choose again");
+                    return;
+                }
                 list.clear();
                 payment = payment.toLowerCase();
 
@@ -55,7 +63,7 @@ public class Search implements Runnable {
                     paymentsArr = payment.split(";");
                     debtsArr = debtor.split(";");
 
-                    if (paymentsArr.length > 2 && debtsArr.length > 2) {
+                    if (paymentsArr.length > 3 && debtsArr.length > 2) {
                         paymentsShort = paymentsArr[2];
                         debtorShort = debtsArr[1];
                     } else continue;
@@ -82,10 +90,10 @@ public class Search implements Runnable {
         }
     }
 
-    private BufferedWriter writer(String path) throws FileNotFoundException {
+    private BufferedWriter writer() throws FileNotFoundException {
         return new BufferedWriter(
                 new OutputStreamWriter(
-                        new FileOutputStream(path)));
+                        new FileOutputStream("d://result22.txt")));
     }
 
     private BufferedReader reader(File file) {
