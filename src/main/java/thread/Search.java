@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,11 +21,6 @@ public class Search implements Runnable {
 
     private File debtorsFile;
     private File paymentsFile;
-
-    private String[] payment;
-    private String[] debtor;
-    private String paymentsShort = "";
-    private String debtorShort = "";
     private List<String[]> list = new LinkedList<>();
 
     public Search(Text txtError, TextArea txtResults, File debtorsFile, File paymentsFile) {
@@ -56,26 +50,25 @@ public class Search implements Runnable {
                     .withCSVParser(parser)
                     .build();
             CSVWriter csvWriter = new CSVWriter(bw);
-
+            String[] payment;
+            String[] debtor;
             while ((payment = readPayments.readNext()) != null) {
                 CSVReader readDebts = new CSVReaderBuilder(brDebts)
                         .withCSVParser(parser)
                         .build();
                 list.clear();
+                list.add(payment);
 
                 while ((debtor = readDebts.readNext()) != null) {
-                        paymentsShort = payment[2].toLowerCase();
-                        debtorShort = debtor[1].toLowerCase();
-
-                    if (debtorShort.contains(paymentsShort)) {
+                    if (debtor[1].toLowerCase().contains(payment[2].toLowerCase())) {
                         list.add(debtor);
                     }
                 }
 
-                if (list.size() != 0) {
+                if (list.size() >1) {
+                    txtResults.appendText(list.get(0)[2] + "\n\n");
                     for (String[] strings : list) {
-                        txtResults.appendText(strings[1] + "\n\n");
-                        csvWriter.writeNext(strings);
+                      csvWriter.writeNext(strings);
                     }
                 }
             }
