@@ -1,10 +1,16 @@
 package thread;
 
+import com.opencsv.*;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.text.Text;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,13 +23,11 @@ public class Search implements Runnable {
     private File debtorsFile;
     private File paymentsFile;
 
-    private String payment;
-    private String debtor;
+    private String[] payment;
+    private String[] debtor;
     private String paymentsShort = "";
     private String debtorShort = "";
-    private List<String> list = new LinkedList<>();
-    private String[] debtsArr;
-    private String[] paymentsArr;
+    private List<String[]> list = new LinkedList<>();
 
     public Search(Text txtError, TextArea txtResults, File debtorsFile, File paymentsFile) {
         this.txtError = txtError;
@@ -39,71 +43,47 @@ public class Search implements Runnable {
             return;
         } else txtError.setText("Searching..."); //Write it at the end of search() method
 
-        BufferedReader readDebts;
-        BufferedReader readPayments = reader(paymentsFile);
-        if (readPayments == null) {
-            System.out.println("Bed payments file, choose again");
-            return;
-        }
+        try(BufferedWriter bw = Files.newBufferedWriter(Paths.get("result.csv"), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+            BufferedReader brPayment = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(paymentsFile), "UTF-8"));
+            BufferedReader brDebts = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(debtorsFile), "UTF-8"));) {
 
-        try {
-            BufferedWriter result = writer();
+            final CSVParser parser = new CSVParserBuilder()
+                    .withSeparator(';')
+                    .build();
+            CSVReader readPayments = new CSVReaderBuilder(brPayment)
+                    .withCSVParser(parser)
+                    .build();
+            CSVWriter csvWriter = new CSVWriter(bw);
 
-            while ((payment = readPayments.readLine()) != null) {
-                readDebts = reader(debtorsFile);
-                if (readDebts == null) {
-                    System.out.println("Bed debtors file, choose again");
-                    return;
-                }
+            while ((payment = readPayments.readNext()) != null) {
+                CSVReader readDebts = new CSVReaderBuilder(brDebts)
+                        .withCSVParser(parser)
+                        .build();
                 list.clear();
-                payment = payment.toLowerCase();
 
-                while ((debtor = readDebts.readLine()) != null) {
-                    debtor = debtor.toLowerCase();
-                    paymentsArr = payment.split(";");
-                    debtsArr = debtor.split(";");
+                while ((debtor = readDebts.readNext()) != null) {
+                        paymentsShort = payment[2].toLowerCase();
+                        debtorShort = debtor[1].toLowerCase();
 
-                    if (paymentsArr.length > 3 && debtsArr.length > 2) {
-                        paymentsShort = paymentsArr[2];
-                        debtorShort = debtsArr[1];
-                    } else continue;
                     if (debtorShort.contains(paymentsShort)) {
                         list.add(debtor);
                     }
                 }
-                readDebts.close();
+
                 if (list.size() != 0) {
-                    txtResults.setText("Client: \n" + payment + "\nDebtors: ");
-                    result.write("Client: " + payment + "\nDebtors: \n");
-                    for (int i = 0; i < list.size(); i++) {
-                        txtResults.setText(list.get(i) + "\n\n");
-                        result.write(list.get(i) + "\n\n");
+                    for (String[] strings : list) {
+                        txtResults.appendText(strings[1] + "\n\n");
+                        csvWriter.writeNext(strings);
                     }
                 }
             }
-
-            readPayments.close();
-            result.close();
             System.out.println("The End");
+            txtResults.appendText("The end");
         } catch (IOException e) {
+            e.printStackTrace();
             System.out.println("Error in result.txt creating");
-        }
-    }
-
-    private BufferedWriter writer() throws FileNotFoundException {
-        return new BufferedWriter(
-                new OutputStreamWriter(
-                        new FileOutputStream("d://result22.txt")));
-    }
-
-    private BufferedReader reader(File file) {
-        try {
-            return new BufferedReader(
-                    new InputStreamReader(
-                            new FileInputStream(file), "Cp1251"));
-        } catch (FileNotFoundException | UnsupportedEncodingException e1) {
-            e1.printStackTrace();
-            return null;
         }
     }
 }
